@@ -1,23 +1,39 @@
 import { StyleSheet, Text, View, KeyboardAvoidingView, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, {useState} from 'react'
 import { TextInput } from 'react-native-paper'
+import { UseState } from 'react'
+import { auth } from '../../firebase'
 
 export default function LoginScreen() {
+  const [userName, setUserName] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSignUp = () =>{
+    auth.createUserWithEmailAndPassword(userName,password).then(userCredentials=>{
+      const user = userCredentials.user;
+      console.log('Kullanıcı',user.userName);
+    }).catch((error)=>alert(error.message));
+  }
+
   return (
     <KeyboardAvoidingView 
     style={styles.container}
     behavior='padding'>
       <View style={styles.inputContainer}>
         <TextInput style={styles.input}
-        placeholder='Kullanıcı Adı'/>
+        placeholder='Kullanıcı Adı'
+        value={userName}
+        onChangeText={(text) => setUserName(text)}/>
         <TextInput style={styles.input}
-        placeholder='Şifre'/>
+        placeholder='Şifre' secureTextEntry
+        value={password}
+        onChangeText={(text) => setPassword(text)}/>
       </View>
       <View style={styles.buttonContanier}>
         <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Giriş Yap</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button,styles.outlineButton]}>
+        <TouchableOpacity onPress={handleSignUp} style={[styles.button,styles.outlineButton]}>
           <Text style={styles.outlineButtonText}>Kayıt Ol</Text>
         </TouchableOpacity>
       </View>
