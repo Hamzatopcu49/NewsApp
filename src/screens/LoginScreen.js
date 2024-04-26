@@ -1,7 +1,6 @@
 import { StyleSheet, Text, View, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { TextInput } from 'react-native-paper';
-import { UseState, useEffect } from 'react';
 import { auth } from '../../firebase';
 import { useNavigation } from '@react-navigation/native';
 
@@ -13,7 +12,7 @@ export default function LoginScreen() {
   useEffect(()=>{
     auth.onAuthStateChanged(user => {
       if(user){
-        navigation.navigate('Home')
+        navigation.navigate('Home');
       }
     });
   },[]);
@@ -39,7 +38,7 @@ export default function LoginScreen() {
     behavior='padding'>
       <View style={styles.inputContainer}>
         <TextInput style={styles.input}
-        placeholder='Kullanıcı Adı'
+        placeholder='Kulanıcı Adı'
         value={userName}
         onChangeText={(text) => setUserName(text)}/>
         <TextInput style={styles.input}
@@ -76,7 +75,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingHorizontal: '15',
     paddingVertical: '10',
-    marginTop: '5',
+    marginTop: 10,
     borderRadius: 10,
   },
   buttonContanier:{
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
   },
   outlineButton:{
     backgroundColor: 'white',
-    marginTop: 5,
+    marginTop: 10,
   },
   outlineButtonText:{
     color: '#0782F9',
