@@ -12,7 +12,7 @@ export default function HomeScreen() {
       await firestore().collection('haberler').add({
         baslik: 'Örnek Haber Başlığı',
         icerik: 'Bu örnek haber içeriğidir.',
-        resimUrl: 'https://example.com/resim.jpg',
+        resimUrl: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.youtube.com%2F%40Galatasaray&psig=AOvVaw1W9nv2IDvI0E0K162SWjE6&ust=1715505835046000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCNDAhbGjhYYDFQAAAAAdAAAAABAE',
         yazar: 'Yazar Adı',
       });
       console.log('Haber başarıyla eklendi');
@@ -38,10 +38,13 @@ export default function HomeScreen() {
   };
   return (
     <View style={styles.container}>
-      <NewsAddButton />
-      <TouchableOpacity onPress={handleSignOut} style={styles.button}>
-        <Text style={styles.buttonText}>Çıkış Yap</Text>
+      <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
+        <Text style={styles.buttonText}>Çıkış</Text>
       </TouchableOpacity>
+      <View style={styles.newsAddButton}>
+        
+        <NewsAddButton />
+      </View>
     </View>
   );
 }
@@ -50,18 +53,27 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#fff',
   },
-  button:{
+  signOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#0782F9',
+    padding: 10,
+    borderRadius: 40,
+  },
+  newsAddButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
     backgroundColor: '#0782F9',
     padding: 15,
-    alignItems:'center',
     borderRadius: 100,
-    width: '20%',
-    marginTop: 20,
+    width: 50,
+    alignItems: 'center',
   },
-  buttonText:{
+  buttonText: {
     color: 'white',
     fontSize: 17,
     fontWeight: '700',
