@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native'
 
 export default function HomeScreen() {
 
-
   const navigation = useNavigation();
   const [haberler, setHaberler] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -13,11 +12,14 @@ export default function HomeScreen() {
   const [icerik, setIcerik] = useState('');
   const [resimUrl, setResimUrl] = useState('');
   const [yazar, setYazar] = useState('');
+  const [kategori, setKategori] = useState('');
+  const [selectedKategori, setSelectedKategori] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const haberGetir = async () => {
       try {
-        const snapshot = await firestore.collection('haberler').get();
+        const snapshot = await firestore.collection('news').get();
         const yeniHaberler = snapshot.docs.map(doc => doc.data());
         setHaberler(yeniHaberler);
       } catch (error) {
@@ -25,6 +27,12 @@ export default function HomeScreen() {
       }
     };
     haberGetir();
+  }, []);
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(user => {
+      setUser(user);
+    });
+    return unsubscribe;
   }, []);
   
   const haberEkle = async () => {
@@ -34,6 +42,7 @@ export default function HomeScreen() {
         icerik: icerik,
         resimUrl: resimUrl,
         yazar:yazar,
+        kategori:kategori,
       });
       console.log('Haber başarıyla eklendi');
       setModalVisible(false);
@@ -41,7 +50,6 @@ export default function HomeScreen() {
       console.error('Haber eklenirken hata oluştu:', error);
     }
   };
-
 
   const handleSignOut= () =>{
     auth.signOut().then(()=>{
@@ -57,6 +65,9 @@ export default function HomeScreen() {
         </TouchableOpacity>
     );
   };
+  const filteredHaberler = selectedKategori
+    ? haberler.filter(haber => haber.kategori === selectedKategori)
+    : haberler;
   return (
 
     <View style={styles.container}>
@@ -72,16 +83,29 @@ export default function HomeScreen() {
         keyExtractor={(item, index) => index.toString()}
         contentContainerStyle={styles.haberListesi}
       />
+      <FlatList
+        horizontal
+        data={Array.from(new Set(haberler.map(haber => haber.kategori)))}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => setSelectedKategori(item)} style={styles.kategoriButton}>
+            <Text style={styles.kategoriButtonText}>{item}</Text>
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={styles.kategoriListesi}
+      />
     
       <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
         <Text style={styles.buttonText}>Çıkış</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => setModalVisible(true)}
-        style={styles.newsAddButton}>
-        <Text style={styles.buttonText}>+</Text>
-      </TouchableOpacity>
+      {user && (
+        <TouchableOpacity
+          onPress={() => setModalVisible(true)}
+          style={styles.newsAddButton}>
+          <Text style={styles.buttonText}>+</Text>
+        </TouchableOpacity>
+      )}
 
       <Modal
         animationType="slide"
@@ -101,7 +125,7 @@ export default function HomeScreen() {
               onChangeText={setBaslik}
             />
             <TextInput
-              style={[styles.input, { height: 100 }]}
+              style={[styles.input, { height: 150 }]}
               placeholder="İçerik"
               value={icerik}
               onChangeText={setIcerik}
@@ -118,6 +142,12 @@ export default function HomeScreen() {
               placeholder="Yazar"
               value={yazar}
               onChangeText={setYazar}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Kategori"
+              value={kategori}
+              onChangeText={setKategori}
             />
             <Button
               title="Kaydet"
