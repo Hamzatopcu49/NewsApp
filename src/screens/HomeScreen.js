@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native'
 
 export default function HomeScreen() {
 
+  const DEFAULT_IMAGE_URL = 'https://via.placeholder.com/200';
   const navigation = useNavigation();
   const [haberler, setHaberler] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -19,8 +20,11 @@ export default function HomeScreen() {
   useEffect(() => {
     const haberGetir = async () => {
       try {
-        const snapshot = await firestore.collection('news').get();
-        const yeniHaberler = snapshot.docs.map(doc => doc.data());
+        const snapshot = await firestore.collection('haberler').get();
+        const yeniHaberler = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return { ...data, id: doc.id };
+        });
         setHaberler(yeniHaberler);
       } catch (error) {
         console.error('Haberler getirilirken hata oluştu:', error);
@@ -52,51 +56,41 @@ export default function HomeScreen() {
   };
 
   const handleSignOut= () =>{
-    auth.signOut().then(()=>{
-      navigation.navigate('Login');
-    }).catch(error =>alert(error.message));
+    auth.signOut().catch(error =>alert(error.message));
   };
-  const NewsAddButton = () => {
-    return (
-        <TouchableOpacity 
-          onPress={haberEkle} 
-          style={styles.button}>
-          <Text style={styles.buttonText}>+</Text>
-        </TouchableOpacity>
-    );
+  const handleSignIn = () => {
+    navigation.navigate('Login');
   };
+
   const filteredHaberler = selectedKategori
     ? haberler.filter(haber => haber.kategori === selectedKategori)
     : haberler;
+
+    const renderHaber = ({ item }) => (
+      <View style={styles.haber}>
+        <Image
+          source={{ uri: item.resimUrl || DEFAULT_IMAGE_URL }}
+          style={styles.haberResim}
+        />
+        <Text style={styles.haberBaslik}>{item.baslik}</Text>
+      </View>
+    );
   return (
 
     <View style={styles.container}>
 
       <FlatList
-        data={haberler}
-        renderItem={({ item }) => (
-          <View style={styles.haber}>
-            <Image source={{ uri: item.resimUrl }} style={styles.haberResim} />
-            <Text style={styles.haberBaslik}>{item.baslik}</Text>
-          </View>
-        )}
-        keyExtractor={(item, index) => index.toString()}
+        data={filteredHaberler}
+        renderItem={renderHaber}
+        keyExtractor={item => item.id}
         contentContainerStyle={styles.haberListesi}
       />
-      <FlatList
-        horizontal
-        data={Array.from(new Set(haberler.map(haber => haber.kategori)))}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => setSelectedKategori(item)} style={styles.kategoriButton}>
-            <Text style={styles.kategoriButtonText}>{item}</Text>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.kategoriListesi}
-      />
     
-      <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
-        <Text style={styles.buttonText}>Çıkış</Text>
+    <TouchableOpacity
+        onPress={user ? handleSignOut : handleSignIn}
+        style={[styles.authButton, { backgroundColor: user ? 'red' : 'green' }]}
+      >
+        <Text style={styles.authButtonText}>{user ? 'Çıkış Yap' : 'Giriş Yap'}</Text>
       </TouchableOpacity>
 
       {user && (
@@ -167,13 +161,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  signOutButton: {
+  authButton: {
     position: 'absolute',
     top: 10,
     right: 10,
-    backgroundColor: '#0782F9',
     padding: 10,
     borderRadius: 40,
+  },
+  authButtonText: {
+    color: 'white',
+    fontSize: 17,
+    fontWeight: '700',
   },
   newsAddButton: {
     position: 'absolute',
