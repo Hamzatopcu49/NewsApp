@@ -29,9 +29,13 @@ export default function HomeScreen() {
       } catch (error) {
         console.error('Haberler getirilirken hata oluştu:', error);
       }
-    };
-    haberGetir();
-  }, []);
+    };haberGetir();
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      haberGetir();
+    });return unsubscribe;
+  }, [navigation]);
+  
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(user => {
       setUser(user);
@@ -49,7 +53,13 @@ export default function HomeScreen() {
         kategori:kategori,
       });
       console.log('Haber başarıyla eklendi');
-      setModalVisible(false);
+        setModalVisible(false);
+        navigation.navigate('HomeScreen', { refresh: true });
+        setBaslik('');
+        setIcerik('');
+        setResimUrl('');
+        setYazar('');
+        setKategori('');
     } catch (error) {
       console.error('Haber eklenirken hata oluştu:', error);
     }
@@ -66,19 +76,42 @@ export default function HomeScreen() {
     ? haberler.filter(haber => haber.kategori === selectedKategori)
     : haberler;
 
+    const handleHaberDetay = (haber) => {
+      navigation.navigate('Detail', { haber });
+    };
+
     const renderHaber = ({ item }) => (
-      <View style={styles.haber}>
+      <TouchableOpacity onPress={() => handleHaberDetay(item)}>
+       <View style={styles.haber}>
         <Image
-          source={{ uri: item.resimUrl || DEFAULT_IMAGE_URL }}
-          style={styles.haberResim}
+        source={{ uri: item.resimUrl || DEFAULT_IMAGE_URL }}
+        style={styles.haberResim}
         />
-        <Text style={styles.haberBaslik}>{item.baslik}</Text>
+       <Text style={styles.haberBaslik}>{item.baslik}</Text>
       </View>
+   </TouchableOpacity>
+    );
+    const kategoriler = ['Tümü', 'Teknoloji', 'Spor', 'Ekonomi', 'Saglik', 'Egitim'];
+    const renderKategori = ({ item }) => (
+      <TouchableOpacity
+        onPress={() => setSelectedKategori(item === 'Tümü' ? null : item)}
+        style={[styles.kategoriButton, selectedKategori === item ? styles.selectedKategori : null]}
+      >
+        <Text style={styles.kategoriButtonText}>{item}</Text>
+      </TouchableOpacity>
     );
   return (
 
     <View style={styles.container}>
 
+      <FlatList
+        data={kategoriler}
+        renderItem={renderKategori}
+        keyExtractor={(item, index) => index.toString()}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.kategoriListesi}
+      />
       <FlatList
         data={filteredHaberler}
         renderItem={renderHaber}
@@ -163,7 +196,7 @@ const styles = StyleSheet.create({
   },
   authButton: {
     position: 'absolute',
-    top: 10,
+    top: 33,
     right: 10,
     padding: 10,
     borderRadius: 40,
@@ -182,6 +215,30 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     width: 50,
     alignItems: 'center',
+  },
+  kategoriListesi: {
+    minHeight: 150,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    marginTop: 15,
+  },
+  kategoriButton: {
+    marginRight: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: 'black',
+    marginTop: 60,
+    maxHeight:50,
+    alignItems: 'center', 
+},
+  selectedKategori: {
+    backgroundColor: 'gray',
+  },
+  kategoriButtonText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
   haberListesi: {
     paddingHorizontal: 20,
