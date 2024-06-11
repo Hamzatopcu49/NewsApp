@@ -52,9 +52,8 @@ export default function HomeScreen() {
         yazar:yazar,
         kategori:kategori,
       });
-      console.log('Haber başarıyla eklendi');
+      console.log('Haber başarıyla eklendi');  
         setModalVisible(false);
-        navigation.navigate('HomeScreen', { refresh: true });
         setBaslik('');
         setIcerik('');
         setResimUrl('');
